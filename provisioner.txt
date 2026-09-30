@@ -1,0 +1,40 @@
+ provisioner "file" {
+    source      = "nginx.sh"
+    destination = "/home/azadmin/nginx.sh"
+
+    connection {
+      type     = "ssh"
+      host     = self.public_ip_address
+      user     = self.admin_username
+      password = self.admin_password
+    }
+ }
+
+  # Execute nginx.sh on VM
+  provisioner "remote-exec" {
+
+    inline = [
+      "chmod +x /home/azadmin/nginx.sh",
+      "sudo /home/azadmin/nginx.sh"
+    ]
+
+    connection {
+      type     = "ssh"
+      host     = self.public_ip_address
+      user     = self.admin_username
+      password = self.admin_password
+    }
+  }
+
+  # Run command on your local machine
+  provisioner "local-exec" {
+
+    command = <<EOT
+  echo "VM Name       : ${self.name}" > vm-details.txt
+ echo "Private IP    : ${azurerm_network_interface.nic[count.index].private_ip_address}" >> vm-details.txt
+ echo "Public IP     : ${self.public_ip_address}" >> vm-details.txt
+  EOT
+
+  }
+}
+
